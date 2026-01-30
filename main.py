@@ -1,5 +1,5 @@
 import requests
-from transmission_rpc import Client, Torrent
+from transmission_rpc import Client, Torrent, Status
 import logging
 
 import config
@@ -34,7 +34,7 @@ def fetch_all_trackers(tracker_list: list[str]) -> list[str]:
 
 def get_active_torrents(client: Client) -> list[Torrent]:
     try:
-        torrents = client.get_recently_active_torrents()[0]
+        torrents = list(filter(lambda x: x.status != Status.STOPPED, client.get_torrents()))
         logging.info(f"Retrieved {len(torrents)} active torrents")
         return torrents
     except Exception as e:
@@ -42,7 +42,8 @@ def get_active_torrents(client: Client) -> list[Torrent]:
         return []
 
 def update_a_torrent_tracker(client: Client, torrent: Torrent, trackers: list[str]) -> int:
-    trackers = list(set(torrent.tracker_list + trackers))
+    exist_trackers = [t.announce for t in torrent.trackers]
+    trackers = list(set(exist_trackers + trackers))
     client.change_torrent(
         ids=torrent.id,
         tracker_list=trackers
