@@ -46,12 +46,16 @@ def get_active_torrents(client: Client) -> list[Torrent]:
 def update_a_torrent_tracker(client: Client, torrent: Torrent, trackers: list[str]) -> int:
     exist_trackers = [t.announce for t in torrent.trackers]
     merged_trackers = list(dict.fromkeys(exist_trackers + trackers))
-    tier_list = [[t] for t in merged_trackers]
+    valid_trackers = [t for t in merged_trackers if t.startswith(("http://", "https://", "udp://", "wss://"))]
+    invalid_trackers = [t for t in merged_trackers if t not in valid_trackers]
+    if invalid_trackers:
+        logging.warning(f"Filtered out {len(invalid_trackers)} invalid trackers: {invalid_trackers}")
+    tier_list = [[t] for t in valid_trackers]
     client.change_torrent(
         ids=torrent.id,
         tracker_list=tier_list
     )
-    logging.info(f"Updated torrent {torrent.name} with {len(merged_trackers)} trackers")
+    logging.info(f"Updated torrent {torrent.name} with {len(valid_trackers)} trackers")
     return torrent.id
 
 
