@@ -50,6 +50,10 @@ def update_a_torrent_tracker(client: Client, torrent: Torrent, trackers: list[st
     invalid_trackers = [t for t in merged_trackers if t not in valid_trackers]
     if invalid_trackers:
         logging.warning(f"Filtered out {len(invalid_trackers)} invalid trackers: {invalid_trackers}")
+    if not valid_trackers:
+        logging.warning(f"No valid trackers for torrent {torrent.name}, skipping")
+        return torrent.id
+    valid_trackers = valid_trackers[:config.MAX_TRACKERS]
     tier_list = [[t] for t in valid_trackers]
     client.change_torrent(
         ids=torrent.id,

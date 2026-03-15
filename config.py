@@ -18,4 +18,6 @@ USE_HTTPS = False
 # Logging configuration
 LOG_LEVEL = logging.INFO
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-LOG_FILE = "/var/log/myapp/app.log"
+LOG_FILE = "./app.log"
+
+MAX_TRACKERS = 90
